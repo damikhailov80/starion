@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import { mkdir } from 'fs/promises';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { existsSync } from 'fs';
 
 export const maxDuration = 300; // 5 минут максимум для рендеринга
@@ -21,17 +21,22 @@ export async function POST(request: NextRequest) {
     const outputFileName = `video-${timestamp}.mp4`;
 
     // Запускаем отдельный Node.js процесс для рендеринга
-    const scriptPath = join(process.cwd(), 'scripts/render-video.mjs');
+    // Используем абсолютный путь от корня проекта
+    const projectRoot = process.cwd();
+    const scriptPath = resolve(projectRoot, 'scripts', 'render-video.mjs');
     
     return new Promise((resolve) => {
-      const renderProcess = spawn('node', [
+      // Формируем аргументы отдельно чтобы избежать статического анализа Turbopack
+      const args = [
         scriptPath,
         JSON.stringify(texts),
         JSON.stringify(audioSegments),
         bgVideoUrl,
         outputFileName
-      ], {
-        cwd: process.cwd(),
+      ];
+      
+      const renderProcess = spawn('node', args, {
+        cwd: projectRoot,
         env: process.env,
       });
 
