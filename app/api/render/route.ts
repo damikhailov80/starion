@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { mkdir } from 'fs/promises';
-import { join, resolve } from 'path';
+import { join } from 'path';
 import { existsSync } from 'fs';
 
 export const runtime = 'nodejs';
@@ -22,15 +22,13 @@ export async function POST(request: NextRequest) {
     const outputFileName = `video-${timestamp}.mp4`;
 
     // Запускаем отдельный Node.js процесс для рендеринга
-    // Используем абсолютный путь от корня проекта
     const projectRoot = process.cwd();
-    const scriptPath = resolve(projectRoot, 'scripts', 'render-video.mjs');
+    const scriptPath = join(projectRoot, 'scripts', 'render-video.mjs');
     
     // Динамически импортируем child_process чтобы избежать статического анализа
-    const { spawn } = await import('child_process');
+    const childProcess = await import('child_process');
     
     return new Promise((resolve) => {
-      // Формируем аргументы отдельно чтобы избежать статического анализа Turbopack
       const args = [
         scriptPath,
         JSON.stringify(texts),
@@ -39,7 +37,7 @@ export async function POST(request: NextRequest) {
         outputFileName
       ];
       
-      const renderProcess = spawn('node', args, {
+      const renderProcess = childProcess.spawn('node', args, {
         cwd: projectRoot,
         env: process.env,
       });
