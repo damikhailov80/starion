@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# exported videos
+/public/exports/*.mp4
+!/public/exports/.gitkeep
