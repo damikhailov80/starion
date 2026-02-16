@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { spawn } from 'child_process';
 import { mkdir } from 'fs/promises';
 import { join, resolve } from 'path';
 import { existsSync } from 'fs';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 минут максимум для рендеринга
 
 export async function POST(request: NextRequest) {
@@ -24,6 +25,9 @@ export async function POST(request: NextRequest) {
     // Используем абсолютный путь от корня проекта
     const projectRoot = process.cwd();
     const scriptPath = resolve(projectRoot, 'scripts', 'render-video.mjs');
+    
+    // Динамически импортируем child_process чтобы избежать статического анализа
+    const { spawn } = await import('child_process');
     
     return new Promise((resolve) => {
       // Формируем аргументы отдельно чтобы избежать статического анализа Turbopack
